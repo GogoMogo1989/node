@@ -14,7 +14,7 @@ app.listen(3000);
 //middleware & static files
 
 app.use(express.static('public'))
-
+app.use(express.urlencoded({ extended: true}))
 app.use(morgan('dev'))
 
 app.use((req, res, next) => {
@@ -32,12 +32,8 @@ app.use((req, res, next) => {
 
 
 app.get('/', (req, res) => {
-    const blogs = [
-        {title: 'Yoshi finds eggs', snippet: 'Lorem ipsum dolor sit amet consectetur'},
-        {title: 'Mario finds stars', snippet: 'Lorem ipsum dolor sit amet consectetur'},
-        {title: 'How to defeat bowser', snippet: 'Lorem ipsum dolor sit amet consectetur'},
-      ];
-   res.render('index', { title: "Home", blogs});
+ 
+   res.redirect('./blogs')
 });
 
 app.get('/about', (req, res) => {
@@ -45,6 +41,30 @@ app.get('/about', (req, res) => {
    res.render('about', { title: "About"})
 
 });
+
+app.get('/blogs', (res, req) => {
+    Blog.find().sort({ createdAT: -1})
+        .then((result) => {
+            res.render('index', {title: 'All Blogs', blogs: result})
+        })
+        .catch((err) => {
+            console.log(error)
+        })
+})
+
+app.post('/blogs', (req, res) => {
+
+    const blog = new Blog(req.body)
+
+    blog.save()
+        .then((result) => {
+            res.redirect('./blogs')
+        })
+        .catch((err) => {
+            console.log(error)
+        })
+
+})
 
 app.get('/blogs/create', (req, res) => {
 
