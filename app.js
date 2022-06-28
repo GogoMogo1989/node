@@ -1,27 +1,44 @@
 const express = require("express")
 const morgan = require("morgan")
 const mongoose = require("mongoose")
+const Blog = require('./models/blog')
 
 
 //express app
 const app = express();
 
 //connect to mongoDB
-const dbURI = 'mongodb+srv://GogoMogo1989:1234@cluster0.dms2yv8.mongodb.net'
-mongoose.connect(dbURI, )
+const dbURI = 'mongodb+srv://netnina:1234@cluster0.dms2yv8.mongodb.net/node-tuts?retryWrites=true&w=majority'
+
+mongoose.connect(dbURI, {useNewUrlParser: true, useUnifiedTopology: true})
+ .then((result) => app.listen(3000))
+ .catch((err) => console.log(error))
+
 
 //register view engine
 app.set('view engine', 'ejs');
-
-
-//listen for requiest
-app.listen(3000);
 
 //middleware & static files
 
 app.use(express.static('public'))
 app.use(express.urlencoded({ extended: true}))
 app.use(morgan('dev'))
+
+app.get('/add-blog', (req, res) => {
+    const blog = new Blog({
+        title: 'new blog',
+        snippet: 'abbout my new blog',
+        body: "more about my new blog"
+    })
+
+    blog.save()
+     .then((result) => {
+        res.send(result)
+     })
+     .catch((err) => {
+        console.log(err)
+     });
+})
 
 app.use((req, res, next) => {
     console.log('new request made: ');
@@ -42,21 +59,20 @@ app.get('/', (req, res) => {
    res.redirect('./blogs')
 });
 
+app.get('/blogs', (res, req) => {
+    const blogs = [
+        {title: 'Yoshi finds eggs', snippet: 'Lorem ipsum dolor sit amet consectetur'},
+        {title: 'Mario finds stars', snippet: 'Lorem ipsum dolor sit amet consectetur'},
+        {title: 'How to defeat bowser', snippet: 'Lorem ipsum dolor sit amet consectetur'},
+      ];
+      res.render('index', { title: 'Home', blogs });
+})
+
 app.get('/about', (req, res) => {
 
    res.render('about', { title: "About"})
 
 });
-
-app.get('/blogs', (res, req) => {
-    Blog.find().sort({ createdAT: -1})
-        .then((result) => {
-            res.render('index', {title: 'All Blogs', blogs: result})
-        })
-        .catch((err) => {
-            console.log(error)
-        })
-})
 
 app.post('/blogs', (req, res) => {
 
