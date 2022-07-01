@@ -18,7 +18,10 @@ app.set('view engine', 'ejs');
 
 // middleware & static files
 app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }))
 app.use(morgan('dev'));
+
+
 app.use((req, res, next) => {
   res.locals.path = req.path;
   next();
@@ -83,6 +86,41 @@ app.get('/blogs', (req, res) => {
       console.log(err);
     });
 });
+
+app.post('/blogs', (req, res) => {
+    const blog = new Blog(req.body)
+
+    blog.save()
+     .then((result) => {
+        res.redirect('/blogs')
+     })
+     .catch((err) => {
+        console.log(error)
+     })
+})
+
+app.get('/blogs/:id', (req, res) => {
+    const id = req.params.id;
+    Blog.findById(id)
+     .then(result => {
+        res.render('details', { blog: result, title: "blog details"})
+     })
+     .catch(error => {
+        console.log(error)
+     })
+})
+
+app.delete('/blogs/:id', (req, res) => {
+    const id = req.params.id
+
+    Blog.findByIdAndDelete(id)
+        .then(result => {
+            res.json({ redirect : '/blogs'});
+        })
+        .catch(error => {
+            console.log(error)
+        })
+})
 
 // 404 page
 app.use((req, res) => {
